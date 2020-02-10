@@ -1,15 +1,18 @@
-﻿
+﻿#function 
+#
+#importOrganizations
+#
+##Takes OUs in files, checks whether an OU with the same name exists within current structure. If they do not exist, adds them to current domain. Else, skips them.  
+#
 function importOrganizations ($orgfilePath) 
 {
-
     $org = $null; 
     $orgFile = $null; 
     $newOrg = $null;
     $ouname = $null;
-
     $orgNames = @();  
 
-    #Create organizations
+    #dump file contents
     $orgFile = Import-Csv -Path $orgFilePath -Header Name, City, Description, DisplayName, State; 
 
     echo " --- OU FILE ---" 
@@ -18,12 +21,14 @@ function importOrganizations ($orgfilePath)
     
     foreach ($org in $orgFile)
     {
+        #Process OU name.
         $ouName = $org.Name.ToString(); 
 
         if ($ouName -ne "Name") #skip first row
         { 
             echo "Curr. Row =  $($ouName)";
              
+            #See if OU already exists (with that name)
             $newOrg = Get-ADOrganizationalUnit -Filter {Name -eq $ouName};
             
             echo " > Org exists? $($null -ne $newOrg)";
@@ -32,15 +37,15 @@ function importOrganizations ($orgfilePath)
             {
                 echo "OU already exists! Skipped."
             }
-            else 
+            else #Create OU in current structure. 
             {
                 $newOrg = New-ADOrganizationalUnit -Name $org.Name -City $org.City -Description $Org.Description -DisplayName $org.DisplayName -State $org.State;
                 $orgNames += $newOrg.objectGUID; 
             
                 echo $newOrg;
             }
-
          }
+
          $ouName = $null; 
          $newOrg = $null; 
     }
