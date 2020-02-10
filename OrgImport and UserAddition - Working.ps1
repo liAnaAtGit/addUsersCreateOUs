@@ -1,9 +1,8 @@
-﻿#function 
-#
-#importOrganizations
+﻿#function - importOrganizations
 #
 ##Takes OUs in files, checks whether an OU with the same name exists within current structure. If they do not exist, adds them to current domain. Else, skips them.  
 #
+
 function importOrganizations ($orgfilePath) 
 {
     $org = $null; 
@@ -52,9 +51,29 @@ function importOrganizations ($orgfilePath)
     return $orgNames;
 }
 
+
+#function - existsOU
+#
+##Checks whether an OU with the same name exists within current structure. 
+#  
+# Returns true if exists. Otherwise returns false. Assumes OU doesn't exist by default. 
+
+function existsOU ($OUName) 
+{
+    $OUExists = $false; 
+
+    if ($null -ne $OUName)
+    {
+        $newOrg = Get-ADOrganizationalUnit -Filter {Name -eq $OUName};
+        $OUExists = $null -ne $newOrg; 
+    }
+
+    return $OUExists;
+}
+
+
 function importUsers ($userfilePath) 
 {
-
     $user = $null; 
     $userFile = $null;
     $newUser = $null;  
@@ -152,7 +171,7 @@ function main {
     } 
 }
 
-function importUsersTests {
+function test-importUsers {
     $nullInputFile = $null; 
     $inputUserFile = $null; 
     
@@ -171,7 +190,7 @@ function importUsersTests {
     } 
 }
 
-function importOUsTests {
+function test-importOUs {
     $inputOUFile = $null; 
     
     $inputOUFile = Read-Host  "OU file";  
@@ -190,6 +209,6 @@ function importOUsTests {
 }
 
 
-#importOUsTests
-#importUsersTests
+#test-importUsers
+#test-importOUs
 main
